@@ -1,86 +1,71 @@
 import g4f
 from typing import TypedDict, List
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from langgraph.graph import StateGraph, END
+
+app = FastAPI()
 
 # Define memory structure
 class State(TypedDict):
-    conversation: List[dict]  # Stores past messages
-    text: str  # Stores the current text input
-    classification: str  # Stores text classification
-    entities: List[str]  # Stores extracted entities
-    summary: str  # Stores summarized text
+    text: str
+    classification: str
+    entities: List[str]
+    summary: str
 
-# Initialize memory
-memory: State = {"conversation": [], "text": "", "classification": "", "entities": [], "summary": ""}
+# Request model
+class TextRequest(BaseModel):
+    text: str
 
 def classification_node(state: State):
-    """
-    Classifies text into predefined categories using g4f.
-    """
-    prompt = f"Classify the following text into one of the categories: News, Blog, Research, or Other.\n\nText: {state['text']}\n\nCategory:"
-    
+    """Classifies text into categories using g4f."""
+    prompt = f"Classify this text into News, Blog, Research, or Other:\n\nText: {state['text']}\n\nCategory:"
     response = g4f.ChatCompletion.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
-    
-    classification_result = response.strip()
-    return {"classification": classification_result}
+    return {"classification": response.strip()}
 
 def entity_extraction_node(state: State):
-    """
-    Extracts named entities (Person, Organization, Location) from text using g4f.
-    """
-    prompt = f"Extract all the entities (Person, Organization, Location) from the following text. Provide the result as a comma-separated list.\n\nText: {state['text']}\n\nEntities:"
-    
+    """Extracts named entities."""
+    prompt = f"Extract all entities (Person, Organization, Location) from this text as a comma-separated list:\n\n{state['text']}"
     response = g4f.ChatCompletion.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
-
-    entities_result = response.strip().split(", ")
-    return {"entities": entities_result}
+    return {"entities": response.strip().split(", ")}
 
 def summarization_node(state: State):
-    """
-    Summarizes the given text into one short sentence using g4f.
-    """
-    prompt = f"Summarize the following text in one short sentence:\n\nText: {state['text']}\n\nSummary:"
-    
+    """Summarizes text into one short sentence."""
+    prompt = f"Summarize this text in one short sentence:\n\n{state['text']}"
     response = g4f.ChatCompletion.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
+    return {"summary": response.strip()}
 
-    summary_result = response.strip()
-    return {"summary": summary_result}
-
-# 🔹 Finalizing the Agent Structure (StateGraph Workflow)
+# Build the workflow
 workflow = StateGraph(State)
-
-# Add nodes to the graph
 workflow.add_node("classification_node", classification_node)
 workflow.add_node("entity_extraction", entity_extraction_node)
 workflow.add_node("summarization", summarization_node)
-
-# Define workflow structure
-workflow.set_entry_point("classification_node")  # Start at classification
+workflow.set_entry_point("classification_node")
 workflow.add_edge("classification_node", "entity_extraction")
 workflow.add_edge("entity_extraction", "summarization")
 workflow.add_edge("summarization", END)
+app_agent = workflow.compile()
 
-# Compile the workflow
-app = workflow.compile()
+@app.post("/process")
+async def process_text(request: TextRequest):
+    """API endpoint for text processing."""
+    if not request.text.strip():
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+    
+    state = {"text": request.text, "classification": "", "entities": [], "summary": ""}
+    output = app_agent.invoke(state)
+    return output
 
-# 🔹 Testing the full agent workflow
-text_to_process = "Apple has unveiled its latest iPhone 16 series at the Worldwide Developers Conference (WWDC). The new models boast improved battery life, advanced AI-driven photography, and an eco-friendly design made from 100'%' recycled materials."
-state = {"text": text_to_process, "conversation": [], "classification": "", "entities": [], "summary": ""}
-
-# Run the workflow on the input text
-output = app.invoke(state)
-
-# Print final results
-print("🚀 Agent Workflow Completed!")
-print(f"📌 Text Classification: {output['classification']}")
-print(f"📌 Extracted Entities: {output['entities']}")
-print(f"📌 Summary: {output['summary']}")
+# Run the server
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
