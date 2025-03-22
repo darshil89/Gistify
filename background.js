@@ -10,6 +10,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "summarizeText") {
         chrome.scripting.executeScript({
             target: { tabId: tab.id },
+            world: "MAIN", // ✅ Ensure access to DOM
             function: summarizeSelectedText,
             args: [info.selectionText]
         });
@@ -18,7 +19,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 async function summarizeSelectedText(text) {
     if (!text) return;
-    
+
     // Remove existing popup if present
     const existingPopup = document.getElementById("summaryPopup");
     if (existingPopup) existingPopup.remove();
@@ -27,29 +28,33 @@ async function summarizeSelectedText(text) {
     const loadingDiv = document.createElement("div");
     loadingDiv.id = "summaryPopup";
     loadingDiv.innerText = "🔄 Summarizing...";
-    loadingDiv.style.position = "fixed";
-    loadingDiv.style.top = "10px";
-    loadingDiv.style.right = "10px";
-    loadingDiv.style.background = "black";
-    loadingDiv.style.color = "white";
-    loadingDiv.style.padding = "10px";
-    loadingDiv.style.borderRadius = "5px";
-    loadingDiv.style.zIndex = "9999";
-    loadingDiv.style.maxWidth = "300px";
-    loadingDiv.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-    loadingDiv.style.display = "flex";
-    loadingDiv.style.alignItems = "center";
-    loadingDiv.style.justifyContent = "space-between";
-    loadingDiv.style.gap = "10px";
+    Object.assign(loadingDiv.style, {
+        position: "fixed",
+        top: "10px",
+        right: "10px",
+        background: "black",
+        color: "white",
+        padding: "10px",
+        borderRadius: "5px",
+        zIndex: "9999",
+        maxWidth: "300px",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "10px"
+    });
 
     // Create a close button (❌)
     const closeButton = document.createElement("button");
     closeButton.innerText = "❌";
-    closeButton.style.background = "transparent";
-    closeButton.style.border = "none";
-    closeButton.style.color = "white";
-    closeButton.style.cursor = "pointer";
-    closeButton.style.fontSize = "16px";
+    Object.assign(closeButton.style, {
+        background: "transparent",
+        border: "none",
+        color: "white",
+        cursor: "pointer",
+        fontSize: "16px"
+    });
     closeButton.onclick = () => loadingDiv.remove();
 
     // Append elements
