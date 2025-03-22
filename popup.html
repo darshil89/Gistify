@@ -12,8 +12,17 @@
         }
         #loading {
             display: none;
-            font-size: 14px;
-            color: gray;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0, 0, 0, 0.2);
+            border-top: 3px solid #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         #summary {
             margin-top: 10px;
@@ -23,7 +32,7 @@
 <body>
     <h3>Summarize Text</h3>
     <button id="summarize-btn">Summarize</button>
-    <p id="loading">⏳ Loading...</p>
+    <div id="loading"></div>
     <p id="summary"></p>
 
     <script src="popup.js"></script>

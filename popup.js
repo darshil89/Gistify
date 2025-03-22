@@ -1,9 +1,9 @@
 document.getElementById("summarize-btn").addEventListener("click", async () => {
-    const loadingText = document.getElementById("loading");
+    const loadingSpinner = document.getElementById("loading");
     const summaryText = document.getElementById("summary");
 
-    // Show loading message and clear previous summary
-    loadingText.style.display = "block";
+    // Show spinner and clear previous summary
+    loadingSpinner.style.display = "block";
     summaryText.textContent = "";
 
     try {
@@ -17,11 +17,11 @@ document.getElementById("summarize-btn").addEventListener("click", async () => {
 
         const data = await response.json();
 
-        // Hide loading and show summary
-        loadingText.style.display = "none";
+        // Hide spinner and show summary
+        loadingSpinner.style.display = "none";
         summaryText.textContent = data.summary;
     } catch (error) {
-        loadingText.style.display = "none";
+        loadingSpinner.style.display = "none";
         summaryText.textContent = "❌ Error fetching summary.";
         console.error("Error:", error);
     }
