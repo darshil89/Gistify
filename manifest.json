@@ -1,19 +1,19 @@
 {
     "manifest_version": 3,
-    "name": "AI Text Summarizer",
+    "name": "Text Summarizer",
     "version": "1.0",
-    "description": "Summarizes selected text using AI",
-    "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
+    "description": "Select text on any webpage and get a summary using AI.",
+    "permissions": ["contextMenus", "storage", "activeTab", "scripting"],
+    "host_permissions": ["http://127.0.0.1:8000/"],
     "background": {
       "service_worker": "background.js"
     },
-    "host_permissions": ["https://*/"],
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
-        "16": "icon.png",
-        "48": "icon.png",
-        "128": "icon.png"
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
       }
     },
     "content_scripts": [
