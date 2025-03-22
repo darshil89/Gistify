@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Text Summarizer",
+    "name": "Gistify",
     "version": "1.0",
     "description": "Select text on any webpage and get a summary using AI.",
     "permissions": ["contextMenus", "storage", "activeTab", "scripting"],
@@ -9,7 +9,17 @@
       "service_worker": "background.js"
     },
     "action": {
-      "default_popup": "popup.html"
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icons/icon16.png",
+        "32": "icons/icon32.png",
+        "128": "icons/icon128.png"
+      }
+    },
+    "icons": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "128": "icons/icon128.png"
     },
     "content_scripts": [
       {
@@ -17,5 +27,4 @@
         "js": ["content.js"]
       }
     ]
-  }
-  
+}
