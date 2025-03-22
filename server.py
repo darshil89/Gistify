@@ -3,8 +3,18 @@ from typing import TypedDict, List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langgraph.graph import StateGraph, END
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Use specific origins in production
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, OPTIONS, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Define memory structure
 class State(TypedDict):
