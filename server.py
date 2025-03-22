@@ -55,6 +55,10 @@ workflow.add_edge("entity_extraction", "summarization")
 workflow.add_edge("summarization", END)
 app_agent = workflow.compile()
 
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Text Processing API!"}
+
 @app.post("/process")
 async def process_text(request: TextRequest):
     """API endpoint for text processing."""
